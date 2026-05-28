@@ -18,7 +18,7 @@ def home():
 def clasificar_tecnologia(data: dict):
 
     return {
-        "debug": data
+        "RECIBIDO": data
     }
 
     try:
