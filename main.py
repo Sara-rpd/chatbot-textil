@@ -1,6 +1,8 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
 import pandas as pd
+import requests
 from motor import clasificar
+import tempfile
 
 app = FastAPI()
 
@@ -13,19 +15,27 @@ def home():
 
 
 @app.post("/clasificar")
-async def clasificar_tecnologia(
-    file: UploadFile = File(...)
-):
+def clasificar_tecnologia(data: dict):
 
     try:
 
+        # URL enviada desde Landbot
+        archivo_url = data.get("file")
+
+        # Descargar archivo
+        response = requests.get(archivo_url)
+
+        # Guardar temporalmente
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+
+            tmp.write(response.content)
+
+            ruta_temp = tmp.name
+
         # Leer Excel
-        df = pd.read_excel(file.file)
+        df = pd.read_excel(ruta_temp)
 
         # Convertir tabla a diccionario
-        # Formato esperado:
-        # | Prueba | Valor |
-
         datos = dict(
             zip(
                 df["Prueba"],
@@ -33,12 +43,12 @@ async def clasificar_tecnologia(
             )
         )
 
-        # Ejecutar motor de reglas
+        # Ejecutar reglas
         resultados = clasificar(datos)
 
         return {
             "datos_recibidos": datos,
-            "tecnologias": resultados
+            "tecnologias": ", ".join(resultados)
         }
 
     except Exception as e:
