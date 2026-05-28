@@ -19,13 +19,14 @@ def clasificar_tecnologia(data: dict):
 
     try:
 
-        # URL enviada desde Landbot
+        # Obtener variables
         archivo_url = data.get("file")
+        unidad_negocio = data.get("unidad_negocio")
 
         # Descargar archivo
         response = requests.get(archivo_url)
 
-        # Guardar temporalmente
+        # Guardar temporal
         with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
 
             tmp.write(response.content)
@@ -35,13 +36,16 @@ def clasificar_tecnologia(data: dict):
         # Leer Excel
         df = pd.read_excel(ruta_temp)
 
-        # Convertir tabla a diccionario
+        # Convertir pruebas a diccionario
         datos = dict(
             zip(
                 df["Prueba"],
                 df["Valor"]
             )
         )
+
+        # Agregar unidad negocio
+        datos["unidad_negocio"] = unidad_negocio
 
         # Ejecutar reglas
         resultados = clasificar(datos)
