@@ -17,32 +17,32 @@ def home():
 @app.post("/clasificar")
 def clasificar_tecnologia(data: dict):
 
-    return {
-        "RECIBIDO": data
-    }
-
     try:
 
-        archivo_url = data.get("file")
+        # Obtener payload real
+        payload = data.get("RECIBIDO", {})
 
-        unidad_negocio = data.get("unidad_negocio")
+        # Variables
+        archivo_url = payload.get("file")
+        unidad_negocio = payload.get("unidad_negocio")
 
-        # Convertir array a string
-        if isinstance(unidad_negocio, list):
-            unidad_negocio = unidad_negocio[0]
+        print("Archivo:", archivo_url)
+        print("Unidad:", unidad_negocio)
 
-        print("Unidad negocio:", unidad_negocio)
-
+        # Descargar Excel
         response = requests.get(archivo_url)
 
+        # Guardar temporal
         with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
 
             tmp.write(response.content)
 
             ruta_temp = tmp.name
 
+        # Leer Excel
         df = pd.read_excel(ruta_temp)
 
+        # Convertir a diccionario
         datos = dict(
             zip(
                 df["Prueba"],
@@ -55,6 +55,7 @@ def clasificar_tecnologia(data: dict):
 
         print("Datos finales:", datos)
 
+        # Ejecutar motor
         resultados = clasificar(datos)
 
         return {
