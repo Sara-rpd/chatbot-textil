@@ -49,10 +49,17 @@ def clasificar_tecnologia(data: dict):
 
         # Ejecutar motor de reglas
         resultados = clasificar(datos)
-
+        
+        # Extraer nombres
+        nombres_tecnologias = [
+            item["tecnologia"]
+            for item in resultados
+        ]
+        
         return {
             "datos_recibidos": datos,
-            "tecnologias": ", ".join(resultados)
+            "ranking": resultados,
+            "tecnologias": ", ".join(nombres_tecnologias)
         }
 
     except Exception as e:
