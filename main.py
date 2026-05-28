@@ -33,7 +33,7 @@ def clasificar_tecnologia(data: dict):
         print(data)
 
         # =========================
-        # OBTENER VARIABLES LAND BOT
+        # VARIABLES LAND BOT
         # =========================
 
         archivo_url = data.get("file")
@@ -46,13 +46,13 @@ def clasificar_tecnologia(data: dict):
         print(unidad_negocio)
 
         # =========================
-        # VALIDAR URL
+        # VALIDAR ARCHIVO
         # =========================
 
         if not archivo_url:
 
             return {
-                "error": "No se recibió archivo"
+                "mensaje": "No se recibió el archivo Excel."
             }
 
         # =========================
@@ -64,7 +64,7 @@ def clasificar_tecnologia(data: dict):
         if response.status_code != 200:
 
             return {
-                "error": "No se pudo descargar el archivo"
+                "mensaje": "No fue posible descargar el archivo."
             }
 
         # =========================
@@ -79,9 +79,6 @@ def clasificar_tecnologia(data: dict):
             tmp.write(response.content)
 
             ruta_temp = tmp.name
-
-        print("\nArchivo temporal:")
-        print(ruta_temp)
 
         # =========================
         # LEER EXCEL
@@ -103,7 +100,7 @@ def clasificar_tecnologia(data: dict):
             if col not in df.columns:
 
                 return {
-                    "error": f"Falta columna: {col}"
+                    "mensaje": f"El archivo no contiene la columna requerida: {col}"
                 }
 
         # =========================
@@ -117,7 +114,6 @@ def clasificar_tecnologia(data: dict):
             prueba = str(row["Prueba"]).strip()
             valor = row["Valor"]
 
-            # Convertir numpy/int/float
             try:
 
                 if pd.notna(valor):
@@ -147,44 +143,48 @@ def clasificar_tecnologia(data: dict):
 
         resultados = clasificar(datos)
 
-        print("\nRESULTADOS MOTOR:")
+        print("\nRESULTADOS:")
         print(resultados)
 
         # =========================
-        # EXTRAER TECNOLOGIAS
+        # VALIDAR RESULTADOS
         # =========================
 
-        nombres_tecnologias = []
+        if not resultados:
 
-        for item in resultados:
-
-            if isinstance(item, dict):
-
-                tecnologia = item.get("tecnologia")
-
-                if tecnologia:
-                    nombres_tecnologias.append(
-                        str(tecnologia)
-                    )
-
-            else:
-
-                nombres_tecnologias.append(
-                    str(item)
+            return {
+                "mensaje": (
+                    "No se encontraron tecnologías "
+                    "compatibles con las pruebas cargadas."
                 )
+            }
+
+        # =========================
+        # CONSTRUIR RESPUESTA
+        # =========================
+
+        mensaje = (
+            "Según las pruebas cargadas, "
+            "estas son las tecnologías recomendadas:\n\n"
+        )
+
+        # TOP 5
+        for item in resultados[:5]:
+
+            tecnologia = item["tecnologia"]
+            confianza = item["confianza"]
+
+            mensaje += (
+                f"• {tecnologia} "
+                f"({confianza}%)\n"
+            )
 
         # =========================
         # RESPUESTA FINAL
         # =========================
 
         return {
-
-            "datos_recibidos": datos,
-
-            "ranking": resultados,
-
-            "tecnologias": ", ".join(nombres_tecnologias)
-
+            "mensaje": mensaje
         }
 
     except Exception as e:
@@ -193,5 +193,5 @@ def clasificar_tecnologia(data: dict):
         print(str(e))
 
         return {
-            "error": str(e)
+            "mensaje": f"Ocurrió un error: {str(e)}"
         }
