@@ -19,30 +19,19 @@ def clasificar_tecnologia(data: dict):
 
     try:
 
-        # Obtener payload real
-        payload = data.get("RECIBIDO", {})
+        archivo_url = data.get("file")
+        unidad_negocio = data.get("unidad_negocio")
 
-        # Variables
-        archivo_url = payload.get("file")
-        unidad_negocio = payload.get("unidad_negocio")
-
-        print("Archivo:", archivo_url)
-        print("Unidad:", unidad_negocio)
-
-        # Descargar Excel
         response = requests.get(archivo_url)
 
-        # Guardar temporal
         with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
 
             tmp.write(response.content)
 
             ruta_temp = tmp.name
 
-        # Leer Excel
         df = pd.read_excel(ruta_temp)
 
-        # Convertir a diccionario
         datos = dict(
             zip(
                 df["Prueba"],
@@ -50,12 +39,8 @@ def clasificar_tecnologia(data: dict):
             )
         )
 
-        # Agregar unidad negocio
         datos["unidad_negocio"] = unidad_negocio
 
-        print("Datos finales:", datos)
-
-        # Ejecutar motor
         resultados = clasificar(datos)
 
         return {
