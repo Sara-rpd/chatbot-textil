@@ -17,6 +17,10 @@ def home():
 @app.post("/clasificar")
 def clasificar_tecnologia(data: dict):
 
+    return {
+        "debug": data
+    }
+
     try:
 
         archivo_url = data.get("file")
